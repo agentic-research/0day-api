@@ -27,11 +27,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "typescript": "^5.9.0",
     "@cloudflare/vitest-pool-workers": "0.18.7",
-    "vitest": "4.1.10",
-    "wrangler": "^4.113.0",
-    "@cloudflare/workers-types": "^5.20260722.1"
+    "vitest": "4.1.10"
   },
   "publishConfig": {
     "access": "public",

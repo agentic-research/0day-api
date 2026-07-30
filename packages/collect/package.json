@@ -26,11 +26,6 @@
     "@agentic-research/depgraph-core": "workspace:*",
     "smol-toml": "^1.7.1"
   },
-  "devDependencies": {
-    "@types/node": "^26.1.2",
-    "typescript": "^5.9.0",
-    "vitest": "4.1.10"
-  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
