@@ -42,6 +42,24 @@ tasks:
       - task: core:test
       - task: collect:test
 
+  readmes:
+    desc: Generate GitHub/npm README.md files from their canonical MDX sources.
+    cmds:
+      - pnpm run readmes
+
+  readmes:check:
+    desc: Test the README renderer and fail when committed Markdown is stale.
+    cmds:
+      - pnpm run test:readmes
+      - pnpm run readmes:check -- README.mdx
+      - task: core:readme:check
+      - task: collect:readme:check
+
+  packages:check:
+    desc: Prove package tarballs contain generated Markdown but no MDX source.
+    cmds:
+      - pnpm run packages:check
+
   fidelity:
     desc: >-
       Prove the packages still reproduce the reference deployment's published
@@ -66,9 +84,11 @@ tasks:
     deps: [deps]
     cmds:
       - task: format:check
+      - task: readmes:check
       - task: typecheck
       - task: core:check
       - task: collect:check
+      - task: packages:check
       - task: fidelity
 
   ci:

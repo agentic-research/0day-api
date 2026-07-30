@@ -29,6 +29,11 @@ tasks:
     cmds:
       - task: release:test:package
 
+  readme:check:
+    desc: "Verify this package's generated README is current."
+    cmds:
+      - pnpm --dir ../.. run readmes:check -- packages/collect/docs/readme.mdx
+
   check:
     desc: >-
       The collector's gate. No workerd target here on purpose — this package

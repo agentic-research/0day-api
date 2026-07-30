@@ -36,6 +36,11 @@ tasks:
     cmds:
       - pnpm run test:workerd
 
+  readme:check:
+    desc: "Verify this package's generated README is current."
+    cmds:
+      - pnpm --dir ../.. run readmes:check -- packages/core/docs/readme.mdx
+
   check:
     desc: "The core's gate."
     deps:

@@ -8,6 +8,11 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
+    "test:readmes": "node --test scripts/readmes.test.mjs",
+    "test:packages": "node --test scripts/package-contents.test.mjs",
+    "readmes": "node scripts/readmes.mjs",
+    "readmes:check": "node scripts/readmes.mjs --check",
+    "packages:check": "pnpm run test:packages && node scripts/package-contents.mjs",
     "typecheck": "tsc -b packages/core packages/collect packages/mcp",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
@@ -15,7 +20,13 @@
   "devDependencies": {
     "@types/node": "^26.1.2",
     "prettier": "^3.6.2",
-    "typescript": "^5.9.0"
+    "remark-frontmatter": "^5.0.0",
+    "remark-mdx": "^3.1.1",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "typescript": "^5.9.0",
+    "unified": "^11.0.5",
+    "yaml": "^2.9.0"
   },
   "license": "Apache-2.0",
   "repository": {
