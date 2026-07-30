@@ -91,6 +91,72 @@ export function classify(
 }
 
 /**
+ * A root-level config file this collector SAW and has no parser for.
+ *
+ * `unresolved` records a declaration that was parsed and resolved to nothing.
+ * A declaration written in a format with no parser never gets that far —
+ * `classify()` returns null, nothing is attempted, nothing fails, and the
+ * coupling is absent rather than recorded. That gap was silence, and silence
+ * is indistinguishable from "there was nothing there" (0day-11da43).
+ *
+ * The real case: canonical-hours declares a coupling to vigil in a root
+ * `.vigil.toml`. Nothing here parses it, so the edge did not appear anywhere —
+ * not in `edges`, not in `weak_edges`, and not in `unresolved`.
+ *
+ * ── Authored, not pattern-matched ────────────────────────────────────────
+ *
+ * The first version of this tested filenames against a regex for "things that
+ * look like config": root dotfiles with a `.toml`/`.json`/`.yaml` extension.
+ * That is a heuristic, and it fails in both directions at once. It reported
+ * `.prettierrc.json` — which declares no coupling to anything — with exactly
+ * the same weight as `.vigil.toml`, so a reader could not tell a real gap from
+ * formatting config. And it would still have missed any declaration whose
+ * filename did not happen to match, while looking exhaustive.
+ *
+ * A guess dressed as a finding is worse than silence, because silence at least
+ * does not claim to have looked.
+ *
+ * So membership here is AUTHORED, in the same class as a project's status:
+ * someone states "this format declares couplings and we do not parse it". That
+ * is a judgment a person makes and a filename cannot imply. Exact lookup, no
+ * pattern.
+ *
+ * The honest cost, stated rather than hidden: a format nobody has written down
+ * stays invisible. That is a smaller and more truthful claim than a regex
+ * pretending to generality it never had — and unlike the regex, the fix is
+ * obvious and bounded when a miss turns up: add the line.
+ */
+export const UNPARSED_FORMATS = new Map<string, string>([
+  [
+    ".vigil.toml",
+    "vigil watch — declares the repositories and beads this repo is watched against",
+  ],
+]);
+
+/**
+ * Root-level files that a known-unparsed format claims, and this collector
+ * therefore saw without examining.
+ *
+ * `classify()` is consulted first so the two can never disagree: the moment a
+ * parser is added for one of these, it stops appearing here. A list that did
+ * not shrink when coverage grew would become a stale complaint rather than a
+ * live statement about what was read.
+ */
+function unexaminedConfigs(allPaths: string[]): string[] {
+  const seen = new Set<string>();
+  for (const relPath of allPaths) {
+    // Root level only: a nested config belongs to a subproject, and this is a
+    // statement about what the REPOSITORY declares.
+    if (relPath.includes("/")) continue;
+    if (!UNPARSED_FORMATS.has(relPath)) continue;
+    // Parsed is not unexamined.
+    if (classify(relPath)) continue;
+    seen.add(relPath);
+  }
+  return [...seen].sort();
+}
+
+/**
  * Directories that were not searched because of the depth cap but do hold a
  * manifest — a real coverage gap, as opposed to the hundreds of leaf
  * directories that were never going to matter.
@@ -446,6 +512,7 @@ export async function selectManifests(provider: any) {
   return {
     files: files.sort((a, b) => (a.path < b.path ? -1 : 1)),
     capped: cappedWithManifest(all),
+    unexamined: unexaminedConfigs(all),
     truncated,
   };
 }
