@@ -77,6 +77,13 @@ tasks:
     cmds:
       - pnpm exec prettier --check .
 
+  precommit:
+    desc: "Fast local gate: formatting, generated READMEs, and type checks."
+    cmds:
+      - task: format:check
+      - task: readmes:check
+      - task: typecheck
+
   check:
     desc: >-
       The gate. Typecheck, per-package checks (including the workerd
