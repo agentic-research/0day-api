@@ -17,7 +17,7 @@
     "dist/**/*.d.ts"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "prepack": "pnpm run build",
     "test": "pnpm run test:package",
     "test:package": "pnpm run build && node -e \"import('./dist/index.js').then(() => console.log('package import ok'))\""
