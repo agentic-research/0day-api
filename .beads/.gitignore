@@ -1,0 +1,42 @@
+# Managed by `rsry init`. The bead-store binary is LOCAL — never git-tracked.
+# A committed binary DB has no git 3-way merge; ordinary resolutions
+# (checkout --theirs/--ours, reset --hard, stash pop) silently eat live bead
+# state (rosary-05fbe0). SQLite is single-user/local; share across clones with
+# `--dolt` (Dolt syncs over its own remote). metadata.json/config.yaml stay
+# tracked so a clone knows the backend, and the JSONL export stays tracked as
+# the text, 3-way-mergeable share surface (never ignored — see below).
+
+# SQLite store + WAL/journal sidecars
+beads.db
+beads.db-shm
+beads.db-wal
+beads.db-journal
+beads.db.migrated
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+
+# Dolt store + server runtime (synced via dolt remote, not git)
+dolt/
+# `bead migrate --commit` renames dolt/ to dolt.bak/ and never deletes it
+# (rosary-3a0e19). It is the same binary Dolt store under a new name, so the
+# rosary-05fbe0 footgun applies verbatim — and it HAS been staged accidentally.
+dolt.bak/
+dolt.bak.*/
+dolt-server.pid
+dolt-server.log
+dolt-server.port
+dolt-server.lock
+dolt-access.lock
+
+# Host-local runtime + credential
+.beads-credential-key
+.local_version
+last-touched
+backup/
+
+# Shareable bead export — the JSONL mirror is the git-tracked source of truth
+# (text, mergeable). Never ignore it, even under a parent `*` / `*.jsonl` rule.
+!beads.jsonl
+!events.jsonl

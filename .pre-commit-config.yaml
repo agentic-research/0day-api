@@ -1,0 +1,52 @@
+repos:
+  # >>> rsry-managed (do not edit between these markers; `rsry hooks install` regenerates) >>>
+  - repo: local
+    hooks:
+      - id: rsry-bead-sync
+        name: rsry bead export sync (rosary-00f2b5)
+        entry: rsry hooks run pre-commit
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+  # <<< rsry-managed <<<
+  # Formatting — auto-fix on commit, matches `task format`.
+  - repo: local
+    hooks:
+      - id: format
+        name: task format (prettier --write)
+        entry: task format
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+  # Basic file hygiene
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b # v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+        exclude: '^\.beads/'
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+        exclude: '^\.beads/'
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: mixed-line-ending
+
+  # Pre-PUSH gate (not commit): run the SAME non-mutating CI-equivalent gate
+  # CI runs, so a push that CI would reject fails locally first. `task ci` is
+  # the single source of truth (Taskfile) — this hook never re-implements the
+  # commands, it just invokes the task. Install once with:
+  #   pre-commit install --hook-type pre-push
+  - repo: local
+    hooks:
+      - id: task-ci
+        name: task ci (1:1 with CI — full gate before push)
+        entry: task ci
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
