@@ -29,10 +29,17 @@ this package does not discover it. Build a `RosterEntry[]` however your project
 already records membership and hand it over:
 
 ```ts
-import { entryFromGithub, resolveCheckouts, parseRoots } from "@agentic-research/depgraph-collect";
+import {
+  entryFromGithub,
+  resolveCheckouts,
+  parseRoots,
+} from "@agentic-research/depgraph-collect";
 
 const roster = resolveCheckouts(
-  [entryFromGithub("agentic-research/mache"), entryFromGithub("agentic-research/rosary")],
+  [
+    entryFromGithub("agentic-research/mache"),
+    entryFromGithub("agentic-research/rosary"),
+  ],
   parseRoots(process.env.REPO_ROOTS),
 );
 ```

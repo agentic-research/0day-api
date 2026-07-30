@@ -1,0 +1,92 @@
+version: "3"
+
+includes:
+  core:
+    taskfile: ./packages/core
+    dir: ./packages/core
+  collect:
+    taskfile: ./packages/collect
+    dir: ./packages/collect
+
+# Golden path: local dev and CI run the same tasks, matching the convention in
+# canonical-hours, cloister, rosary and mache. Workflows call into this
+# Taskfile rather than restating the gate in YAML — a gate written twice is a
+# gate that will eventually disagree with itself.
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  deps:
+    desc: Install from the lockfile (frozen) and build local workspace packages.
+    cmds:
+      - CI=true pnpm install --frozen-lockfile
+      - task: build
+
+  build:
+    desc: Build every package.
+    cmds:
+      - pnpm -r build
+
+  typecheck:
+    desc: Type-check every package against its own target runtime's configuration.
+    cmds:
+      - task: core:typecheck
+      - task: collect:typecheck
+
+  test:
+    desc: Run every package's tests.
+    cmds:
+      - task: core:test
+      - task: collect:test
+
+  fidelity:
+    desc: >-
+      Prove the packages still reproduce the reference deployment's published
+      artifact byte-for-byte. Needs a 0day checkout; skips loudly without one.
+    cmds:
+      - node scripts/fidelity.mjs
+
+  format:
+    desc: Format everything.
+    cmds:
+      - pnpm exec prettier --write .
+
+  format:check:
+    desc: Fail if anything is unformatted.
+    cmds:
+      - pnpm exec prettier --check .
+
+  check:
+    desc: >-
+      The gate. Typecheck, per-package checks (including the workerd
+      portability proof), and the fidelity comparison. Run before commit.
+    deps: [deps]
+    cmds:
+      - task: format:check
+      - task: typecheck
+      - task: core:check
+      - task: collect:check
+      - task: fidelity
+
+  ci:
+    desc: The exact gate CI runs.
+    cmds:
+      - task: check
+
+  publish:core:
+    desc: Run the full gate, then publish @agentic-research/depgraph-core.
+    deps: [check]
+    cmds:
+      - task: core:publish
+
+  publish:collect:
+    desc: >-
+      Run the full gate, then publish @agentic-research/depgraph-collect.
+      Publish core FIRST — collect depends on it, and pnpm rewrites the
+      workspace:* range to the version core actually has on the registry.
+    deps: [check]
+    cmds:
+      - task: collect:publish

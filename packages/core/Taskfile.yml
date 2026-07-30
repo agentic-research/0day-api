@@ -1,0 +1,50 @@
+version: "3"
+
+includes:
+  release:
+    taskfile: ../../tasks/release-ts.yml
+    vars:
+      TARGET_PKG: package.json
+      TAG_TEMPLATE: core-v%s
+      PKG_NAME: "@agentic-research/depgraph-core"
+
+tasks:
+  build:
+    desc: "Build the portable core."
+    cmds:
+      - pnpm run build
+
+  typecheck:
+    desc: "Type-check against the workers-compatible configuration."
+    cmds:
+      - pnpm exec tsc --noEmit -p tsconfig.json
+
+  test:
+    desc: "Run the core's tests."
+    cmds:
+      - pnpm run test
+
+  test:package:
+    desc: "Build, then prove the published ESM entrypoint imports under Node."
+    cmds:
+      - task: release:test:package
+
+  test:workerd:
+    desc: >-
+      Run the core inside a simulated workerd runtime. This package claims to
+      be portable; that claim is worth exactly as much as this test.
+    cmds:
+      - pnpm run test:workerd
+
+  check:
+    desc: "The core's gate."
+    deps:
+      - typecheck
+      - test
+      - test:package
+      - test:workerd
+
+  publish:
+    desc: "Publish @agentic-research/depgraph-core."
+    cmds:
+      - task: release:publish

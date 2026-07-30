@@ -11,13 +11,13 @@ compares byte-for-byte.
 
 ## Packages
 
-| Package | What it is |
-| --- | --- |
-| [`@agentic-research/depgraph-core`](packages/core) | The contract, the derivation and the gate. `zod` and `smol-toml` only — no filesystem, no network. Runs in workerd or a browser. |
-| [`@agentic-research/depgraph-collect`](packages/collect) | Reading repositories into a sources lock. Node-only, and uses no credential. |
+| Package                                                  | What it is                                                                                                                       |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| [`@agentic-research/depgraph-core`](packages/core)       | The contract, the derivation and the gate. `zod` and `smol-toml` only — no filesystem, no network. Runs in workerd or a browser. |
+| [`@agentic-research/depgraph-collect`](packages/collect) | Reading repositories into a sources lock. Node-only, and uses no credential.                                                     |
 
-The split is not stylistic. The design rests on one gate — *re-derive from the
-same sources and compare* — and that only means something if deriving cannot
+The split is not stylistic. The design rests on one gate — _re-derive from the
+same sources and compare_ — and that only means something if deriving cannot
 reach the network. Otherwise "the artifact matches its sources" quietly becomes
 "the artifact matches whatever the network returned this time".
 

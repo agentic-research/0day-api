@@ -18,11 +18,7 @@
  *      rather than quietly shrinking.
  */
 
-import {
-  SiteMap,
-  schemaUrl,
-  SCHEMA_VERSION,
-} from "./site-map.js";
+import { SiteMap, schemaUrl, SCHEMA_VERSION } from "./site-map.js";
 import type { SourcesLock } from "./sources-lock.js";
 
 type SiteMapDoc = import("zod").infer<typeof SiteMap>;

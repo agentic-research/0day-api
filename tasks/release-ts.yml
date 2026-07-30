@@ -1,0 +1,38 @@
+version: "3"
+
+# Reusable TypeScript package release tasks, imported per-package via
+# `includes:`. Same shape as canonical-hours/tasks/release-ts.yml, so the two
+# repositories release the same way rather than each inventing a procedure.
+#
+# Variables:
+#   TARGET_PKG:   path to the package.json to bump
+#   TAG_TEMPLATE: git tag format, e.g. core-v%s
+#   PKG_NAME:     pnpm filter, e.g. @agentic-research/depgraph-core
+
+vars:
+  TARGET_PKG: '{{.TARGET_PKG | default "packages/core/package.json"}}'
+  TAG_TEMPLATE: '{{.TAG_TEMPLATE | default "core-v%s"}}'
+  PKG_NAME: '{{.PKG_NAME | default "@agentic-research/depgraph-core"}}'
+
+tasks:
+  bump:
+    desc: "Interactively bump version, commit and tag."
+    cmds:
+      - pnpm exec bumpp {{.TARGET_PKG}} --tag "{{.TAG_TEMPLATE}}"
+
+  test:package:
+    desc: "Prove the published ESM entrypoint imports before anything is pushed to a registry."
+    cmds:
+      - pnpm --filter {{.PKG_NAME}} run test:package
+
+  publish:
+    desc: "Verify the built entrypoint, then publish from a local CLI."
+    cmds:
+      - pnpm --filter {{.PKG_NAME}} run test:package
+      - pnpm --filter {{.PKG_NAME}} publish --access public
+
+  ci-publish:
+    desc: "Publish from CI with provenance attestation."
+    cmds:
+      - pnpm --filter {{.PKG_NAME}} run test:package
+      - pnpm --filter {{.PKG_NAME}} publish --no-git-checks --access public --provenance

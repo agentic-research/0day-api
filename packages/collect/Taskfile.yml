@@ -1,0 +1,44 @@
+version: "3"
+
+includes:
+  release:
+    taskfile: ../../tasks/release-ts.yml
+    vars:
+      TARGET_PKG: package.json
+      TAG_TEMPLATE: collect-v%s
+      PKG_NAME: "@agentic-research/depgraph-collect"
+
+tasks:
+  build:
+    desc: "Build the Node-only collector."
+    cmds:
+      - pnpm run build
+
+  typecheck:
+    desc: "Type-check against the Node configuration."
+    cmds:
+      - pnpm exec tsc --noEmit -p tsconfig.json
+
+  test:
+    desc: "Run the collector's tests."
+    cmds:
+      - pnpm run test
+
+  test:package:
+    desc: "Build, then prove the published ESM entrypoint imports under Node."
+    cmds:
+      - task: release:test:package
+
+  check:
+    desc: >-
+      The collector's gate. No workerd target here on purpose — this package
+      exists precisely to hold the parts that need Node.
+    deps:
+      - typecheck
+      - test
+      - test:package
+
+  publish:
+    desc: "Publish @agentic-research/depgraph-collect."
+    cmds:
+      - task: release:publish

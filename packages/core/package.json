@@ -1,7 +1,7 @@
 {
   "name": "@agentic-research/depgraph-core",
   "version": "0.1.0",
-  "description": "Portable dependency-map contract and derivation: authored/derived boundary, resolution confidence, and a re-derivable artifact — no filesystem or network.",
+  "description": "Portable dependency-map contract and derivation: authored/derived boundary, resolution confidence, and a re-derivable artifact \u2014 no filesystem or network.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,17 +11,28 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["README.md", "dist/**/*.js", "dist/**/*.d.ts"],
+  "files": [
+    "README.md",
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "test": "node --test --experimental-strip-types test/*.test.ts"
+    "test": "pnpm run test:workerd",
+    "test:workerd": "vitest run --config vitest.workerd.config.mts",
+    "test:package": "pnpm run build && node -e \"import('./dist/index.js').then(() => console.log('package import ok'))\"",
+    "prepack": "pnpm run build"
   },
   "dependencies": {
     "smol-toml": "^1.7.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "@cloudflare/vitest-pool-workers": "0.18.7",
+    "vitest": "4.1.10",
+    "wrangler": "^4.113.0",
+    "@cloudflare/workers-types": "^5.20260722.1"
   },
   "publishConfig": {
     "access": "public",
@@ -33,5 +44,11 @@
     "url": "git+https://github.com/agentic-research/0day-api.git",
     "directory": "packages/core"
   },
-  "keywords": ["dependency-graph", "provenance", "sbom", "monorepo", "zod"]
+  "keywords": [
+    "dependency-graph",
+    "provenance",
+    "sbom",
+    "monorepo",
+    "zod"
+  ]
 }

@@ -11,7 +11,7 @@ which is Node-only and depends on this.
 ## Why the split is here and not somewhere convenient
 
 The derivation is the part that has to be reproducible. The design rests on
-one gate — *re-derive from the same sources and compare byte-for-byte* — and
+one gate — _re-derive from the same sources and compare byte-for-byte_ — and
 that gate is only meaningful if deriving cannot reach the network. If it
 could, "the artifact matches its sources" would quietly become "the artifact
 matches whatever the network returned this time".
@@ -34,8 +34,8 @@ from a repository's own manifests). Every edge carries how it was resolved:
 ## Scope, stated plainly
 
 `unresolved` records **resolution** gaps. A coupling declared in a format the
-collector has no parser for is never attempted, so it is *absent rather than
-recorded*. Read `sources_read` for which formats were actually read, and
+collector has no parser for is never attempted, so it is _absent rather than
+recorded_. Read `sources_read` for which formats were actually read, and
 treat everything outside that list as unexamined rather than empty.
 
 ## Usage
@@ -45,7 +45,12 @@ import { derive, checkGraph, schemaUrl } from "@agentic-research/depgraph-core";
 
 const graph = derive(lock, projects, { origin: "https://example.com" });
 
-const result = checkGraph({ lockText, graphText, projects, origin: "https://example.com" });
+const result = checkGraph({
+  lockText,
+  graphText,
+  projects,
+  origin: "https://example.com",
+});
 if (!result.ok) throw new Error(result.message);
 ```
 

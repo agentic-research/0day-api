@@ -37,8 +37,7 @@ export const PUBLISHED_INDEX_PATH = "/.well-known/site-map.json";
  * their own URL, and a wrong default costs a failed fetch rather than a
  * plausible-looking lie.
  */
-export const PUBLISHED_INDEX_URL =
-  "https://xn--w6j.day" + PUBLISHED_INDEX_PATH;
+export const PUBLISHED_INDEX_URL = "https://xn--w6j.day" + PUBLISHED_INDEX_PATH;
 
 type OwnershipEntry = {
   coordinate: string;

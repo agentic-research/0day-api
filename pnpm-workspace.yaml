@@ -1,2 +1,10 @@
 packages:
   - "packages/*"
+
+# workerd, esbuild and sharp ship prebuilt binaries fetched by a postinstall
+# script. Without this pnpm blocks those scripts and the workerd portability
+# test cannot run at all — same list as canonical-hours.
+allowBuilds:
+  esbuild: true
+  sharp: true
+  workerd: true
