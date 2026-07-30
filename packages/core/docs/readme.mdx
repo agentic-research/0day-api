@@ -1,0 +1,71 @@
+---
+title: depgraph-core
+summary: Portable dependency-map contract, derivation, and gate.
+package: "@agentic-research/depgraph-core"
+runtime: workerd-browser
+---
+
+# @agentic-research/depgraph-core
+
+The portable half of a derived dependency map: the contract, the derivation,
+and the gate. No filesystem, no network, no process — its only dependencies
+are `zod` and `smol-toml`, so it runs in workerd, a Durable Object or a
+browser as readily as in Node.
+
+Reading repositories is [`@agentic-research/depgraph-collect`](../collect),
+which is Node-only and depends on this.
+
+## Why the split is here and not somewhere convenient
+
+The derivation is the part that has to be reproducible. The design rests on
+one gate — _re-derive from the same sources and compare byte-for-byte_ — and
+that gate is only meaningful if deriving cannot reach the network. If it
+could, "the artifact matches its sources" would quietly become "the artifact
+matches whatever the network returned this time".
+
+So the boundary is not stylistic. It is what makes the guarantee checkable.
+
+## What it produces
+
+A document splitting **authored** statements (a maintainer's judgment:
+status, membership, editorial relationships) from **derived** facts (read
+from a repository's own manifests). Every edge carries how it was resolved:
+
+- `edges` — the target was named outright, or named an identifier that
+  repository declares publishing.
+- `weak_edges` — the target could only be matched by name. Kept, because
+  deleting a real coupling is its own distortion, but never folded into
+  `edges`.
+- `unresolved` — parsed, and resolved to no repository, with the reason.
+
+## Scope, stated plainly
+
+`unresolved` records **resolution** gaps. A coupling declared in a format the
+collector has no parser for is never attempted, so it is _absent rather than
+recorded_. Read `sources_read` for which formats were actually read, and
+treat everything outside that list as unexamined rather than empty.
+
+## Usage
+
+```ts
+import { derive, checkGraph, schemaUrl } from "@agentic-research/depgraph-core";
+
+const graph = derive(lock, projects, { origin: "https://example.com" });
+
+const result = checkGraph({
+  lockText,
+  graphText,
+  projects,
+  origin: "https://example.com",
+});
+if (!result.ok) throw new Error(result.message);
+```
+
+`origin` is required and deliberately not defaulted: it becomes the
+document's `$schema`, and a default would have every deployment publish an
+artifact pointing at somebody else's contract — a link that resolves, returns
+a plausible document, and is wrong.
+
+## License
+
+Apache-2.0
