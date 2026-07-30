@@ -29,10 +29,12 @@ const documents = [
   },
   {
     path: "packages/core/docs/readme.mdx",
+    outputPath: "packages/core/README.md",
     required: ["title", "summary", "package", "runtime"],
   },
   {
     path: "packages/collect/docs/readme.mdx",
+    outputPath: "packages/collect/README.md",
     required: ["title", "summary", "package", "runtime"],
   },
 ];
@@ -91,10 +93,14 @@ export function selectDocuments(documents, requested) {
   return selected;
 }
 
+export function outputPathFor(descriptor) {
+  return descriptor.outputPath ?? descriptor.path.replace(/\.mdx$/, ".md");
+}
+
 async function renderDocument(root, descriptor) {
   const sourcePath = resolve(root, descriptor.path);
   return {
-    outputPath: sourcePath.replace(/\.mdx$/, ".md"),
+    outputPath: resolve(root, outputPathFor(descriptor)),
     text: await renderReadme(await readFile(sourcePath, "utf8"), descriptor),
   };
 }

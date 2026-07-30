@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { renderReadme, selectDocuments } from "./readmes.mjs";
+import { outputPathFor, renderReadme, selectDocuments } from "./readmes.mjs";
 
 const root = {
   path: "README.mdx",
@@ -50,4 +50,14 @@ test("selects every README when no source path is selected", () => {
   ];
 
   assert.deepEqual(selectDocuments(documents, new Set()), documents);
+});
+
+test("maps a package source outside the package root to its published README", () => {
+  assert.equal(
+    outputPathFor({
+      path: "packages/core/docs/readme.mdx",
+      outputPath: "packages/core/README.md",
+    }),
+    "packages/core/README.md",
+  );
 });
