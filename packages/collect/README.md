@@ -1,0 +1,45 @@
+# @agentic-research/depgraph-collect
+
+Reading repositories into a sources lock, which
+[`@agentic-research/depgraph-core`](../core) derives the map from. Node-only —
+everything that touches a filesystem, a network or a process lives here so the
+core does not.
+
+## No credential, deliberately
+
+Nothing in this package reads a token or an environment variable for one.
+Repository visibility is established by asking GitHub **unauthenticated**, and
+it fails closed: a repository whose visibility cannot be established is treated
+as private, its manifests are never read, and any edge touching it carries no
+detail.
+
+This is a constraint, not an oversight. A graph whose contents depend on who
+authenticated is not reproducible by anyone else. It is also a bug this code
+has already had: an earlier version used a token "if present", and a
+privileged run recorded three private repositories as public.
+
+The cost is the unauthenticated rate limit — sixty requests an hour, one per
+repository. That is the right trade, and a token cannot buy your way out of it
+without reintroducing the bug.
+
+## Membership is yours to supply
+
+The roster — which repositories the map may name — is an authored judgment, so
+this package does not discover it. Build a `RosterEntry[]` however your project
+already records membership and hand it over:
+
+```ts
+import { entryFromGithub, resolveCheckouts, parseRoots } from "@agentic-research/depgraph-collect";
+
+const roster = resolveCheckouts(
+  [entryFromGithub("agentic-research/mache"), entryFromGithub("agentic-research/rosary")],
+  parseRoots(process.env.REPO_ROOTS),
+);
+```
+
+There is no default search root. A package cannot know where you keep your
+checkouts, and guessing would silently find the wrong repository.
+
+## License
+
+Apache-2.0

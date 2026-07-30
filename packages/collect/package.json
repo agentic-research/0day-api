@@ -1,0 +1,37 @@
+{
+  "name": "@agentic-research/depgraph-collect",
+  "version": "0.1.0",
+  "description": "Read what repositories declare — manifests, lockfiles, workflows — into a sources lock the portable core derives from. Node-only, no credential.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["README.md", "dist/**/*.js", "dist/**/*.d.ts"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "pnpm run build"
+  },
+  "dependencies": {
+    "@agentic-research/depgraph-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "typescript": "^5.9.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentic-research/0day-api.git",
+    "directory": "packages/collect"
+  },
+  "keywords": ["dependency-graph", "manifest", "monorepo", "provenance"]
+}
