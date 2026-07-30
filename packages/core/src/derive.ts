@@ -18,7 +18,15 @@
  *      rather than quietly shrinking.
  */
 
-import { SiteMap, schemaUrl, SCHEMA_VERSION } from "./site-map.js";
+import {
+  SiteMap,
+  schemaUrl,
+  SCHEMA_VERSION,
+  // The coupling vocabulary lives in the contract, not here. It used to be
+  // declared in both places with nothing keeping them equal.
+  EDGE_KINDS,
+  RESERVED_EDGE_KINDS,
+} from "./site-map.js";
 import type { SourcesLock } from "./sources-lock.js";
 
 type SiteMapDoc = import("zod").infer<typeof SiteMap>;
@@ -70,41 +78,6 @@ type OwnershipIndex = {
 };
 
 export const GRAPH_SCHEMA_VERSION = SCHEMA_VERSION;
-
-/**
- * Coupling kinds.
- *
- * A single repository pair can be coupled several ways at once, and the ways
- * fail differently. mache depends on ley-line-open as a Go library, as a
- * downloaded and digest-verified executable, and as a wire protocol; a scalar
- * `depends_on` flattens all three into one word and loses the fact that they
- * break independently.
- *
- * `schema` and `lineage` are the two couplings a handshake cannot fix — a `.db`
- * outlives the connection that produced it. They are named here and
- * deliberately NOT derived: no machine-readable source declares them today.
- * Emitting them would mean hand-authoring a fact, which is the failure mode
- * this generator exists to avoid. They become derivable when a producer
- * declares them; until then their absence is honest.
- */
-export const EDGE_KINDS = {
-  library: "linked or imported at build time from a declared dependency",
-  artifact: "a pinned executable or image consumed at run time",
-  protocol: "an RPC or wire coupling between running processes",
-  composition: "a published file of the target, pinned at an exact commit",
-  tenancy: "declares itself mountable under the target's hosting contract",
-  // Distinct from `protocol`, which is two running processes talking. An event
-  // edge is a CI trigger: the target's workflow dispatches a named event and
-  // this repository's workflow declares it accepts it. Nothing is running, no
-  // wire is open, and the coupling breaks in its own way — a renamed event type
-  // silently stops a downstream build without failing anything.
-  event: "reacts to a repository_dispatch event the target sends",
-};
-
-export const RESERVED_EDGE_KINDS = {
-  schema: "data-at-rest schema shared through a stored artifact",
-  lineage: "derivation identity carried by content hashes across versions",
-};
 
 /**
  * How an edge's target was resolved, and how much that resolution is worth.

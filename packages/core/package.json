@@ -1,6 +1,6 @@
 {
   "name": "@agentic-research/depgraph-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Portable dependency-map contract, derivation and gate. One dependency (zod), no filesystem, no network \u2014 runs in workerd.",
   "type": "module",
   "main": "./dist/index.js",

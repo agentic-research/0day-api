@@ -1,6 +1,6 @@
 {
   "name": "@agentic-research/depgraph-collect",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Read what repositories declare \u2014 manifests, lockfiles, workflows \u2014 into a sources lock the portable core derives from. Node-only, no credential.",
   "type": "module",
   "main": "./dist/index.js",

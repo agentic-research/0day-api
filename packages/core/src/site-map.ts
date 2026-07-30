@@ -103,13 +103,68 @@ const Boundary = z
   .object({ authored: BoundarySide, derived: BoundarySide })
   .strict();
 
-export const EDGE_KIND_VALUES = [
-  "library",
-  "artifact",
-  "protocol",
-  "composition",
-  "tenancy",
-  "event",
+/**
+ * The coupling vocabulary — names AND their meanings, in one declaration.
+ *
+ * A single repository pair can be coupled several ways at once, and the ways
+ * fail differently. mache depends on ley-line-open as a Go library, as a
+ * downloaded and digest-verified executable, and as a wire protocol; a scalar
+ * `depends_on` flattens all three into one word and loses the fact that they
+ * break independently.
+ *
+ * This used to be TWO declarations: the names here, and the descriptions in
+ * the generator, with nothing connecting them. They agreed, but only by
+ * inspection — adding a kind in one place and forgetting the other would have
+ * produced either a valid kind the document could not describe, or a
+ * description for a kind the schema rejects. Neither would have failed a gate.
+ *
+ * Deriving {@link EDGE_KIND_VALUES} from these keys makes that unrepresentable
+ * rather than merely unlikely, which is the standard this project holds
+ * everything else to.
+ */
+export const EDGE_KINDS = {
+  library: "linked or imported at build time from a declared dependency",
+  artifact: "a pinned executable or image consumed at run time",
+  protocol: "an RPC or wire coupling between running processes",
+  composition: "a published file of the target, pinned at an exact commit",
+  tenancy: "declares itself mountable under the target's hosting contract",
+  // Distinct from `protocol`, which is two running processes talking. An event
+  // edge is a CI trigger: the target's workflow dispatches a named event and
+  // this repository's workflow declares it accepts it. Nothing is running, no
+  // wire is open, and the coupling breaks in its own way — a renamed event type
+  // silently stops a downstream build without failing anything.
+  event: "reacts to a repository_dispatch event the target sends",
+} as const;
+
+/**
+ * Couplings that are real, named, and deliberately NOT derived.
+ *
+ * `schema` and `lineage` are the two a handshake cannot fix — a stored `.db`
+ * outlives the connection that produced it. No machine-readable source
+ * declares them today, and emitting them anyway would mean hand-authoring a
+ * fact, which is the failure this generator exists to prevent. They become
+ * derivable when a producer declares them; until then their absence is honest.
+ *
+ * Published in the artifact so a consumer learns the vocabulary BEFORE any
+ * edge uses it — which is what makes widening an announcement rather than a
+ * surprise.
+ */
+export const RESERVED_EDGE_KINDS = {
+  schema: "data-at-rest schema shared through a stored artifact",
+  lineage: "derivation identity carried by content hashes across versions",
+} as const;
+
+/**
+ * The enum the contract validates against — derived, never restated.
+ *
+ * The cast is what `z.enum` needs (a non-empty tuple) and is safe because
+ * `EDGE_KINDS` is a non-empty object literal; the element type stays the
+ * literal union of its keys, so widening the map widens the enum and the
+ * TypeScript type together.
+ */
+export const EDGE_KIND_VALUES = Object.keys(EDGE_KINDS) as [
+  keyof typeof EDGE_KINDS,
+  ...(keyof typeof EDGE_KINDS)[],
 ];
 
 const STATUS_VALUES = [
@@ -390,7 +445,62 @@ export const SiteMap = z
     reserved_edge_kinds: z.record(z.string(), z.string()),
     resolution: z.record(z.string(), Resolution),
   })
-  .strict();
+  .strict()
+  /**
+   * Cross-references no schema language can express, checked here so they
+   * cannot quietly stop being true.
+   *
+   * Two invariants, and the second was previously enforced by ACCIDENT:
+   *
+   *   1. `resolved_by` names a key in `resolution`. Documented since the
+   *      beginning, but only ever enforced INDIRECTLY — `deps:check`
+   *      re-derives the whole document and compares, so a dangling rule
+   *      showed up as a diff. That protects this repository, which
+   *      re-derives. It does nothing for someone consuming the package with
+   *      their own extractors, who has no committed artifact to diff against.
+   *
+   *   2. Every `kind` used is described in `edge_kinds`. Today the closed
+   *      enum guarantees this for free: a kind that is not in the vocabulary
+   *      cannot parse. That is the guarantee which DIES the moment the enum
+   *      opens for third-party extension — silently, because nothing else
+   *      was ever checking it. Written down now, while the enum still makes
+   *      it redundant, so that opening the enum is a one-line change rather
+   *      than a one-line change plus remembering this.
+   *
+   * Deliberately on the schema rather than in `checkGraph`: this way anyone
+   * who parses gets it, including a consumer of the published package who
+   * never runs our gate. JSON Schema cannot carry it — `z.toJSONSchema`
+   * simply omits it — so a JSON-Schema-only validator still needs the
+   * re-derivation gate, which is why the contract says so.
+   */
+  .superRefine((doc, ctx) => {
+    const described = new Set(Object.keys(doc.edge_kinds));
+    const rules = new Set(Object.keys(doc.resolution));
+
+    for (const field of ["edges", "weak_edges"] as const) {
+      doc[field].forEach((edge, index) => {
+        if (!described.has(edge.kind)) {
+          ctx.addIssue({
+            code: "custom",
+            path: [field, index, "kind"],
+            message:
+              `edge kind ${JSON.stringify(edge.kind)} is not described in ` +
+              `edge_kinds. A consumer reading this document has no way to ` +
+              `learn what the coupling means.`,
+          });
+        }
+        if (!rules.has(edge.resolved_by)) {
+          ctx.addIssue({
+            code: "custom",
+            path: [field, index, "resolved_by"],
+            message:
+              `resolved_by ${JSON.stringify(edge.resolved_by)} names no key ` +
+              `in resolution, so the edge's confidence cannot be looked up.`,
+          });
+        }
+      });
+    }
+  });
 
 /** Keys of the artifact whose value is a list. Derived, never typed out. */
 type CollectionKey = {
