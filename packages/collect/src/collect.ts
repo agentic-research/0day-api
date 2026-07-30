@@ -42,7 +42,7 @@ import {
   extractTaskfile,
   extractVersionPin,
   extractWorkflow,
-} from "@agentic-research/depgraph-core";
+} from "./extract.js";
 import {
   githubProvider,
   localProvider,

@@ -1,7 +1,7 @@
 {
   "name": "@agentic-research/depgraph-core",
   "version": "0.1.0",
-  "description": "Portable dependency-map contract and derivation: authored/derived boundary, resolution confidence, and a re-derivable artifact \u2014 no filesystem or network.",
+  "description": "Portable dependency-map contract, derivation and gate. One dependency (zod), no filesystem, no network \u2014 runs in workerd.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -24,7 +24,6 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "smol-toml": "^1.7.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {

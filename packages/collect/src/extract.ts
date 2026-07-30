@@ -23,7 +23,7 @@ import type {
   TaskfileFacts,
   VersionPinFacts,
   WorkflowFacts,
-} from "./sources-lock.js";
+} from "@agentic-research/depgraph-core";
 
 /** A parsed TOML document, before we have decided what any of it means. */
 type Toml = Record<string, any>;

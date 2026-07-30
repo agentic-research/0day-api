@@ -23,7 +23,8 @@
     "test:package": "pnpm run build && node -e \"import('./dist/index.js').then(() => console.log('package import ok'))\""
   },
   "dependencies": {
-    "@agentic-research/depgraph-core": "workspace:*"
+    "@agentic-research/depgraph-core": "workspace:*",
+    "smol-toml": "^1.7.1"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",

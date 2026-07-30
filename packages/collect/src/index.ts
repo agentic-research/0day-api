@@ -11,6 +11,7 @@
  * GitHub unauthenticated, so a privileged collector cannot record a private
  * repository as public. Adding a token would silently widen what gets read.
  */
+export * from "./extract.js";
 export * from "./roster.js";
 export * from "./providers.js";
 export * from "./collect.js";
