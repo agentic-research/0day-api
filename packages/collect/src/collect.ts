@@ -87,7 +87,8 @@ export async function readVisibility(
 /** Collect facts for one repository through a provider. */
 export async function collectRepo(slug: string, provider: any) {
   const notes: string[] = [];
-  const { files, capped, truncated } = await selectManifests(provider);
+  const { files, capped, unexamined, truncated } =
+    await selectManifests(provider);
 
   if (truncated) {
     notes.push(
@@ -143,6 +144,10 @@ export async function collectRepo(slug: string, provider: any) {
       .filter(Boolean)
       .sort((a: any, b: any) => (a.path < b.path ? -1 : 1)),
     notes: notes.sort(),
+    // Root configs a known-unparsed format claims. Carried to the lock so the
+    // gap reaches a consumer: a note printed at collect time and then dropped
+    // is invisible to everyone who reads the artifact.
+    unexamined,
   };
 }
 
@@ -209,6 +214,7 @@ export async function collect(
       visibility,
       on_map: entry.onMap,
       read: false,
+      unexamined: [] as string[],
     };
 
     if (visibility !== "public") {
@@ -237,6 +243,7 @@ export async function collect(
       }
       sawPrivate = true;
       record.read = true;
+      record.unexamined = result.unexamined;
       repos.push(record);
       sources.push(...result.sources);
       report.read.push(
@@ -275,6 +282,7 @@ export async function collect(
     }
 
     record.read = true;
+    record.unexamined = result.unexamined;
     repos.push(record);
     sources.push(...result.sources);
     report.read.push(

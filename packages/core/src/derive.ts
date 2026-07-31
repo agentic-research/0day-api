@@ -1325,6 +1325,8 @@ export function derive(
         // What GitHub reports, not the manifest's authored `visibility`.
         repo_visibility: repo.visibility,
         sources_read: repo.read,
+        // Seen and not examined — a parser gap stated rather than left silent.
+        unexamined: repo.unexamined ?? [],
         manifests_read: manifestCount.get(repo.slug) ?? 0,
         authored: (authored
           ? {

@@ -355,6 +355,20 @@ export const LockRepo = z
     visibility: z.enum(["public", "restricted"]),
     on_map: z.boolean(),
     read: z.boolean(),
+    /**
+     * Root config files a known-unparsed format claims, which this collector
+     * SAW and did not examine.
+     *
+     * `unresolved` records a declaration that was parsed and resolved to
+     * nothing. A declaration in a format with no parser never gets that far,
+     * so the coupling is absent rather than recorded — and absent is
+     * indistinguishable from there having been nothing there.
+     *
+     * Empty for a repository that was not read: nothing was seen, so nothing
+     * can be reported as unexamined. That is different from an empty list on a
+     * repository that WAS read, which means it declared none.
+     */
+    unexamined: z.array(z.string()),
   })
   .strict();
 

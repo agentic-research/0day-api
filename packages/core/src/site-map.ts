@@ -341,6 +341,24 @@ export const Entity = z
     repo_visibility: z.enum(["public", "restricted"]),
     sources_read: z.boolean(),
     manifests_read: z.number().int().nonnegative(),
+    /**
+     * Root config files the collector SAW and has no parser for.
+     *
+     * `unresolved` covers declarations that were parsed and resolved to
+     * nothing. A declaration in a format with no parser is never attempted, so
+     * without this it is absent rather than recorded — and absent reads
+     * exactly like there having been nothing there. This is the difference
+     * between "we looked and found no coupling" and "we did not look".
+     *
+     * Membership is authored: a format appears here only because someone
+     * stated that it declares couplings and is not parsed. A filename cannot
+     * imply that, and guessing from one would report formatting config beside
+     * real gaps.
+     *
+     * Empty on a repository that was not read — nothing was seen, so nothing
+     * can be unexamined. Distinct from empty on one that WAS read.
+     */
+    unexamined: z.array(z.string()),
     authored: Authored.nullable(),
     derived: z
       .object({
@@ -555,7 +573,7 @@ export const COLLECTIONS: Record<CollectionKey, string> = {
   weak_edges:
     "Couplings a source declares whose target could only be matched by name. Kept, because deleting a real coupling would be its own distortion, but never folded into `edges`. If you want only what is established, read `edges` and ignore this.",
   unresolved:
-    "Declared couplings that resolve to no repository at all, with the reason. A resolution gap is recorded rather than dropped, so the document never looks more resolved than it is. Note the scope: this covers declarations the collector PARSED and could not resolve. A coupling declared in a format it has no parser for is never attempted, so it is absent rather than recorded — see `sources_read` for which formats were actually read, and treat everything else as unexamined rather than empty (0day-11da43 tracks closing this).",
+    "Declared couplings that resolve to no repository at all, with the reason. A resolution gap is recorded rather than dropped, so the document never looks more resolved than it is. Note the scope: this covers declarations the collector PARSED and could not resolve. A coupling declared in a format it has no parser for is never attempted, so it is absent rather than recorded — see `sources_read` for which formats were actually read, and `entities[].unexamined` for root configs seen but not parsed.",
   ownership:
     "Every coordinate the ecosystem declares publishing — module path, crate, package, image, MCP server — and which repository declares it. This is the index every exact edge was resolved against, so a reader can reproduce a resolution rather than take it on trust. A coordinate two repositories claim carries `contested` rather than being reduced to one.",
 };
