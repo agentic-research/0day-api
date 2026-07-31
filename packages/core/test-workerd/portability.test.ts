@@ -31,6 +31,13 @@ import {
  * time so that deriving stays pure, which is the same boundary this test
  * exists to defend.
  */
+/** Deployment identity — required now that it is not hard-coded in derive. */
+const SITE = {
+  name: "example map",
+  url: "https://example.com",
+  describes: "example-org",
+};
+
 const lock = {
   schema_version: 1,
   collected_at: "2026-01-01T00:00:00.000Z",
@@ -97,7 +104,10 @@ describe("depgraph-core under workerd", () => {
   });
 
   it("derives a document that satisfies its own published contract", () => {
-    const doc = derive(lock as never, [], { origin: "https://example.com" });
+    const doc = derive(lock as never, [], {
+      origin: "https://example.com",
+      site: SITE,
+    });
 
     // Validated with the contract rather than by shape-eyeballing: if zod's
     // runtime behaviour differed here, this is where it would show.
@@ -117,8 +127,14 @@ describe("depgraph-core under workerd", () => {
   });
 
   it("is deterministic — the property the whole gate depends on", () => {
-    const a = derive(lock as never, [], { origin: "https://example.com" });
-    const b = derive(lock as never, [], { origin: "https://example.com" });
+    const a = derive(lock as never, [], {
+      origin: "https://example.com",
+      site: SITE,
+    });
+    const b = derive(lock as never, [], {
+      origin: "https://example.com",
+      site: SITE,
+    });
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
   });
 });

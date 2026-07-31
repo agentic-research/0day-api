@@ -591,6 +591,103 @@ export interface DeriveOptions {
    * project exists to make impossible, so the caller has to say.
    */
   origin: string;
+
+  /**
+   * What this deployment calls itself, and what it describes.
+   *
+   * Was hard-coded to `{ name: "〇.day", url: "https://xn--w6j.day",
+   * describes: "agentic-research" }` — which is correct for the reference
+   * deployment and a lie for every other one. Missed on extraction because
+   * unlike `$schema` it is not a link anyone resolves, so nothing would have
+   * failed; the artifact would simply have claimed to be somebody else's.
+   */
+  site: {
+    /** Display name, e.g. `"acme deps"`. */
+    name: string;
+    /** Canonical URL of the human-facing site. */
+    url: string;
+    /** What set of repositories this map covers, e.g. an org name. */
+    describes: string;
+  };
+}
+
+/**
+ * Which fact field carries a repository's REQUIREMENTS, per source format.
+ *
+ * Explicit rather than inferred. A format that declares requirements and is
+ * absent from this table contributes zero to the disclosure below — which
+ * would understate coverage in exactly the way the disclosure exists to
+ * prevent — so the omission has to be visible here rather than implied by a
+ * heuristic over field names.
+ */
+const REQUIREMENT_FIELDS: Record<string, string> = {
+  cargo: "deps",
+  gomod: "requires",
+  npm: "deps",
+  "server-json": "requiredDeps",
+  "cluster-toml": "inputs",
+  "cluster-lock": "inputs",
+  taskfile: "releaseRepos",
+  workflow: "listensFor",
+};
+
+/**
+ * How many dependency declarations were PARSED, whether or not they became
+ * edges.
+ *
+ * The map only emits edges between repositories it names. A declaration on
+ * anything else — the overwhelming majority, since every repository depends on
+ * far more of the world than of its own ecosystem — is read, understood, and
+ * then deliberately dropped: it is a third-party dependency, not a coverage
+ * gap, and recording each one would bury the couplings this map exists to show.
+ *
+ * That decision is defensible and was invisible. A reader saw two dozen edges
+ * and could reasonably conclude these repositories barely depend on anything.
+ * Publishing the count turns "we found 24 couplings" into "we found 24 internal
+ * couplings among 658 parsed declarations", which is the same fact without the
+ * false modesty.
+ *
+ * Counted from the lock directly rather than by instrumenting the resolution
+ * loop's several drop sites. Two independent paths to the same population: if
+ * they ever disagree, that is a finding about the resolver rather than a bug in
+ * a counter that was threaded through twenty-nine `continue` statements.
+ *
+ * `version-pin` contributes one per source — the file IS the declaration, and
+ * it has no list to walk.
+ */
+function countDeclarations(lock: SourcesLock): {
+  parsed: number;
+  distinct: number;
+} {
+  let parsed = 0;
+  const coordinates = new Set<string>();
+
+  for (const source of lock.sources) {
+    if (source.format === "version-pin") {
+      parsed += 1;
+      const tool = (source.facts as { tool?: string }).tool;
+      if (tool) coordinates.add(tool);
+      continue;
+    }
+    const field = REQUIREMENT_FIELDS[source.format];
+    if (!field) continue;
+    const entries = (source.facts as Record<string, unknown>)[field];
+    if (!Array.isArray(entries)) continue;
+    for (const entry of entries) {
+      parsed += 1;
+      const name =
+        typeof entry === "string"
+          ? entry
+          : ((entry as Record<string, unknown>).name ??
+            (entry as Record<string, unknown>).server ??
+            (entry as Record<string, unknown>).repo ??
+            (entry as Record<string, unknown>).identifier ??
+            (entry as Record<string, unknown>).event ??
+            (entry as Record<string, unknown>).path);
+      if (typeof name === "string" && name) coordinates.add(name);
+    }
+  }
+  return { parsed, distinct: coordinates.size };
 }
 
 /**
@@ -1285,11 +1382,9 @@ export function derive(
     // local private-inclusive one at a glance, without inferring it from what
     // happens to be redacted.
     private_inclusive: lock.private_inclusive ?? false,
-    site: {
-      name: "\u3007.day",
-      url: "https://xn--w6j.day",
-      describes: "agentic-research",
-    },
+    site: options.site,
+    // What was read, as against what became an edge. See countDeclarations.
+    declarations: countDeclarations(lock),
     boundary: {
       authored: {
         fields: [

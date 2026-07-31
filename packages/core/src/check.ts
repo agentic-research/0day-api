@@ -91,10 +91,21 @@ export function checkGraph({
   graphText,
   projects = [],
   origin,
+  site,
 }: {
   lockText: string;
   graphText: string;
   projects?: any[];
+  /**
+   * Identity of the deployment the committed artifact was derived for.
+   *
+   * Same reason as `origin`: the gate re-derives and compares byte-for-byte,
+   * so it must reproduce the `site` block the artifact carries. A default
+   * would make the gate pass for an artifact derived by a different
+   * deployment — agreement it never established.
+   */
+  site: { name: string; url: string; describes: string };
+
   /**
    * The deployment origin the committed artifact was derived for.
    *
@@ -148,7 +159,7 @@ export function checkGraph({
     };
   }
 
-  const expectedText = serialize(derive(lock, projects, { origin }));
+  const expectedText = serialize(derive(lock, projects, { origin, site }));
   if (graphText !== expectedText) {
     const diff = firstDifference(expectedText, graphText);
     return {

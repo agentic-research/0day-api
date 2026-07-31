@@ -441,6 +441,26 @@ export const SiteMap = z
     unresolved: z.array(Unresolved),
     /** Every coordinate the ecosystem declares publishing, and who declares it. */
     ownership: z.array(Ownership),
+    /**
+     * What was READ, as against what became an edge.
+     *
+     * The map only emits edges between repositories it names; a declaration on
+     * anything else is parsed and then deliberately dropped as a third-party
+     * dependency rather than a coverage gap. That is a defensible scope and it
+     * was invisible — a reader saw two dozen edges and could reasonably infer
+     * these repositories barely depend on anything.
+     *
+     * `parsed` counts declarations; `distinct` counts the coordinates they
+     * name. Neither is a count of edges, and the gap between them and
+     * `edges.length` is the point: it is the difference between this map's
+     * scope and the world.
+     */
+    declarations: z
+      .object({
+        parsed: z.number().int().nonnegative(),
+        distinct: z.number().int().nonnegative(),
+      })
+      .strict(),
     edge_kinds: z.record(z.string(), z.string()),
     reserved_edge_kinds: z.record(z.string(), z.string()),
     resolution: z.record(z.string(), Resolution),

@@ -20,6 +20,12 @@ import path from "node:path";
 import { derive, checkGraph } from "../packages/core/dist/index.js";
 
 const ORIGIN = "https://xn--w6j.day";
+// The reference deployment's identity, which `derive` no longer hard-codes.
+const SITE = {
+  name: "\u3007.day",
+  url: "https://xn--w6j.day",
+  describes: "agentic-research",
+};
 
 const candidates = [
   process.env.REFERENCE_CHECKOUT,
@@ -69,7 +75,7 @@ const { projects } = await import(
 
 const produced =
   JSON.stringify(
-    derive(JSON.parse(lockText), projects, { origin: ORIGIN }),
+    derive(JSON.parse(lockText), projects, { origin: ORIGIN, site: SITE }),
     null,
     2,
   ) + "\n";
@@ -89,7 +95,13 @@ if (produced !== graphText) {
   process.exit(1);
 }
 
-const result = checkGraph({ lockText, graphText, projects, origin: ORIGIN });
+const result = checkGraph({
+  lockText,
+  graphText,
+  projects,
+  origin: ORIGIN,
+  site: SITE,
+});
 if (!result.ok) {
   console.error(
     `FAIL: the packaged gate rejected the reference artifact (${result.reason})`,
