@@ -19,3 +19,4 @@ export * from "./sources-lock.js";
 export * from "./derive.js";
 export * from "./check.js";
 export * from "./render.js";
+export * from "./slice.js";
