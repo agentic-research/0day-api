@@ -8,5 +8,9 @@
     "rootDir": "src"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  // Tests are not part of the package. Without this they compile into dist/,
+  // which `files` publishes wholesale — shipping a module that imports vitest,
+  // a devDependency, to every consumer. They also then run twice, once from
+  // src and once from the built copy, which is how this was noticed.
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
 }

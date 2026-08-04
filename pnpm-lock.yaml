@@ -43,6 +43,10 @@ importers:
       smol-toml:
         specifier: ^1.7.1
         version: 1.7.1
+    devDependencies:
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@types/node@26.1.2)(vite@7.3.6(@types/node@26.1.2)(yaml@2.9.0))
 
   packages/core:
     dependencies:

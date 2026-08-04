@@ -131,6 +131,10 @@ export const UNPARSED_FORMATS = new Map<string, string>([
     ".vigil.toml",
     "vigil watch — declares the repositories and beads this repo is watched against",
   ],
+  [
+    "compatibility.json",
+    "a declared interoperability range — the schema and wire versions a consumer must be within to talk to this repository's artifacts",
+  ],
 ]);
 
 /**
@@ -142,7 +146,7 @@ export const UNPARSED_FORMATS = new Map<string, string>([
  * not shrink when coverage grew would become a stale complaint rather than a
  * live statement about what was read.
  */
-function unexaminedConfigs(allPaths: string[]): string[] {
+export function unexaminedConfigs(allPaths: string[]): string[] {
   const seen = new Set<string>();
   for (const relPath of allPaths) {
     // Root level only: a nested config belongs to a subproject, and this is a
